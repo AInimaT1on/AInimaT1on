@@ -8,9 +8,6 @@ mp_pose = mp.solutions.pose
 
 cap = cv2.VideoCapture(0)
 
-#Curl Counter variable
-counter = 0
-stage = None
 
 
 ## set mediapip instance: 
@@ -32,11 +29,6 @@ with mp_pose.Pose(min_detection_confidence=0.6, min_tracking_confidence=0.6) as 
         #Extract Landmarks
         try:
             landmarks = results.pose_landmarks.landmark
-            
-            # Get coordinats
-            left_hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
-            left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-            left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
 
     
         except:
