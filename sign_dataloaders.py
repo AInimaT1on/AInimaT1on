@@ -17,15 +17,19 @@ class SignDataLoader(torch.utils.data.Dataset):
         self.transform = transform
         self.labels = self.train_df['label']
         self.images = self.train_df.drop(['label'], axis=1)
-        print(len(self.labels.unique()))
+        #print(len(self.labels.unique()))
 
     def __len__(self):
         return len(self.train_df)
 
     def __getitem__(self, idx):
         img_np = np.asarray(self.images.iloc[idx]).reshape(28,28).astype('uint8')
+        #img_as_tensor = torch.from_numpy(img_np)
         img_label = self.labels.iloc[idx]
         if self.transform is not None:
             img_processed = self.transform(img_np)
             return (img_processed, img_label)
         return (img_np, img_label)
+# x = SignDataLoader('data/train data/sign_mnist_train.csv')
+#
+# print(x[0])

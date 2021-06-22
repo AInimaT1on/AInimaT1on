@@ -65,16 +65,19 @@ class handDetector():
 
 
 		return self.lmList, bbox, hands_region
-
+################################################################################
+### For finding and processing the hand
 
 	def process_hand_img(self,img_arr):
 		pil_img = Image.fromarray(img_arr)
+
 		test_transforms = transforms.Compose([
 									transforms.Grayscale(),
 									transforms.Resize((28,28)),
                                     transforms.ToTensor(),
 									transforms.Normalize((0.5,), (0.5,)),
                                       ])
+
 		image_tensor = test_transforms(pil_img).float()
 		image_tensor = torch.flatten(image_tensor).reshape((1,784))
 		return image_tensor
@@ -86,41 +89,34 @@ class handDetector():
 		cap = cv2.VideoCapture(0)
 		detector = handDetector()
 		model = torch.load("oldmodels/savedmodel.pth")
-
 		current_pred = None
 		avg_pred_tracker = []
 		while True:
 			ret, frame = cap.read()
-
-			frame = detector.findHands(frame)
-
-			lmList, bbox, hands_only = detector.findPosition(frame)
+################################################################################
+### For finding and processing the hand
+			hands_frame = detector.findHands(frame)
+			lmList, bbox, hands_only = detector.findPosition(hands_frame)
 			hands_processed = detector.process_hand_img(hands_only)
-			print(hands_processed.shape)
+################################################################################
+### For predicting the image of the hand
 			model.eval()
 			with torch.no_grad():
 				max_vals, max_indices = model(hands_processed).max(1)
 				avg_pred_tracker.append(max_indices)
 				if len(avg_pred_tracker)==30:
 					prediction = stats.mode(avg_pred_tracker)[0]
-					print(type(prediction))
 					current_pred =  prediction
 					avg_pred_tracker = []
 			model.train()
-
+################################################################################
+### For outputting to the screen
 			cv2.putText(frame, str(current_pred), (10,70),cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
 			cv2.imshow('hands_frame', frame)
-
-
-
-			cTime = time.time()
-			fps = 1 / (cTime - pTime)
-			pTime = cTime
-
-			cv2.putText(frame, str(int(fps)), (10,70),cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
-
 			cv2.imshow('hands_only', hands_only)
 
+################################################################################
+### For breaking out of video loop use 'q' or 'Q'
 			if cv2.waitKey(1) & 0xFF == ord('q') or 0xFF == ord('Q'):
             			break
 

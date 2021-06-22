@@ -28,7 +28,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
         for i, (images, labels) in enumerate(iter(x_train_loader)):
             images.resize_(images.size()[0],784)
             optimizer.zero_grad()
-            print(f"IMAGES SIZE {images.shape}")
+            #print(f"IMAGES SIZE {images.shape}")
             output = model.forward(images)
             loss = criterion(output, labels)
             loss.backward()
@@ -51,6 +51,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
             acc_test.append(acc)
             if acc > max_accuracy:
                 torch.save(model, 'adam_lr001_ep10.pth')
+                max_accuracy = acc
 
         model.train()
 
@@ -60,7 +61,10 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
 
 ################################################################################
 train_transforms = transforms.Compose([
+                            transforms.ToPILImage(),
                             transforms.RandomRotation(30),
+                            transforms.ColorJitter(),
+                            transforms.RandomPerspective(),
                             transforms.RandomHorizontalFlip(),
                             transforms.ToTensor(),
                             transforms.Normalize((0.5,), (0.5,)),
@@ -70,10 +74,11 @@ test_transforms = transforms.Compose([
                             transforms.ToTensor(),
                             transforms.Normalize((0.5,), (0.5,)),
                              ])
+
 train_data = SignDataLoader("data/train data/sign_mnist_train.csv", transform=train_transforms)
 test_data = SignDataLoader("data/test data/sign_mnist_test.csv", transform=test_transforms)
 
-train_loader = torch.utils.data.DataLoader(train_data, batch_size=16, shuffle=True)
-test_loader = torch.utils.data.DataLoader(train_data, batch_size=16, shuffle=False)
+train_loader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True)
+test_loader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=False)
 model = SignNN(784, 64, 32, 16)
-trained_model = train_MyNN(train_loader, test_loader, model , 0.001, 10)
+trained_model = train_MyNN(train_loader, test_loader, model , 0.0003, 100)
