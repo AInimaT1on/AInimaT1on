@@ -3,6 +3,10 @@ import mediapipe as mp
 import time
 import math
 import numpy as np
+import pandas as pd
+
+train_df = pd.read_csv("data/train data/sign_mnist_train.csv")
+
 
 class handDetector():
 	def __init__(self, mode=False, maxHands=2, detectionCon = 0.6, trackCon = 0.6):
@@ -26,13 +30,14 @@ class handDetector():
 			for handLms in self.results.multi_hand_landmarks:
 				if draw:
 					self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS)
-		
+
 		return img
 
 	def findPosition(self, img, handNo=0, draw = True):
 		xList=[]
 		yList=[]
 		bbox=[]
+		hands_region = img.copy()
 		self.lmList=[]
 		if self.results.multi_hand_landmarks:
 			myHand = self.results.multi_hand_landmarks[handNo]
@@ -48,11 +53,22 @@ class handDetector():
 
 			xmin, xmax= min(xList), max(xList)
 			ymin, ymax = min(yList), max(yList)
-			bbox= xmin, xmax, ymax
 
+			hands_region = img[ymin-20: ymax+20,xmin-20:xmax+20]
 			if draw:
-				cv2.rectangle(img, (xmin -20, ymin-20),(xmax +20, ymax+20),(0,255,0), 2)
-		return self.lmList, bbox
+				cv2.rectangle(img, (xmin -20, ymin-20),(xmax +20, ymax+20),(0,255,255), 2)
+
+
+		return self.lmList, bbox, hands_region
+
+
+	def capture_hand_img(self,img_arr):
+		gray = cv2.cvtColor(img_arr, cv2.COLOR_RGB2GRAY)
+		blur = cv2.GaussianBlur(gray, (5,5), 0)
+		img_canny = cv2.Canny(blur, 50, 150)
+		return img_canny
+
+
 
 	def fingersUp(self):
 		fingers = []
@@ -86,27 +102,35 @@ class handDetector():
 
 	def main():
 		pTime = 0
-		cTime=0
+		cTime = 0
 		cap = cv2.VideoCapture(0)
 		detector = handDetector()
 		while True:
 			ret, frame = cap.read()
 			frame = detector.findHands(frame)
-			lmList, bbox = detector.findPosition(frame)
+			cv2.imshow('hands_frame', frame)
+			lmList, bbox, hands_only = detector.findPosition(frame)
+			hands = detector.capture_hand_img(hands_only)
+
+
+
 			if len(lmList) != 0:
 				print(lmList[4])
 
 			cTime = time.time()
 			fps = 1 / (cTime - pTime)
-			pTime = cTime 
+			pTime = cTime
 
 			cv2.putText(frame, str(int(fps)), (10,70),cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
-			cv2.imshow('Image', frame)
-			
-			if cv2.waitKey(10) & 0xFF == ord('q') or 0xFF == ord('Q'):
+
+			try:
+
+				cv2.imshow('hands_only', hands)
+			except:
+				print("cant find")
+			if cv2.waitKey(1) & 0xFF == ord('q') or 0xFF == ord('Q'):
             			break
-    			
+
 
 if __name__ == '__main__':
 	handDetector.main()
-
