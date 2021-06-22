@@ -4,7 +4,11 @@ import time
 import math
 import numpy as np
 import pandas as pd
-
+from sign_model import SignNN
+import torch
+from torchvision import datasets, transforms
+from PIL import Image
+from scipy import stats
 train_df = pd.read_csv("data/train data/sign_mnist_train.csv")
 
 
@@ -22,7 +26,7 @@ class handDetector():
 		self.tipIds = [4, 8, 12, 16, 20]
 
 
-	def findHands(self, img, draw= True):
+	def findHands(self, img, draw= False):
 		imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 		self.results = self.hands.process(imgRGB)
 
@@ -33,7 +37,7 @@ class handDetector():
 
 		return img
 
-	def findPosition(self, img, handNo=0, draw = True):
+	def findPosition(self, img, handNo=0, draw = False):
 		xList=[]
 		yList=[]
 		bbox=[]
@@ -55,6 +59,7 @@ class handDetector():
 			ymin, ymax = min(yList), max(yList)
 
 			hands_region = img[ymin-20: ymax+20,xmin-20:xmax+20]
+
 			if draw:
 				cv2.rectangle(img, (xmin -20, ymin-20),(xmax +20, ymax+20),(0,255,255), 2)
 
@@ -62,60 +67,51 @@ class handDetector():
 		return self.lmList, bbox, hands_region
 
 
-	def capture_hand_img(self,img_arr):
-		gray = cv2.cvtColor(img_arr, cv2.COLOR_RGB2GRAY)
-		blur = cv2.GaussianBlur(gray, (5,5), 0)
-		img_canny = cv2.Canny(blur, 50, 150)
-		return img_canny
+	def process_hand_img(self,img_arr):
+		pil_img = Image.fromarray(img_arr)
+		test_transforms = transforms.Compose([
+									transforms.Grayscale(),
+									transforms.Resize((28,28)),
+                                    transforms.ToTensor(),
+									transforms.Normalize((0.5,), (0.5,)),
+                                      ])
+		image_tensor = test_transforms(pil_img).float()
+		image_tensor = torch.flatten(image_tensor).reshape((1,784))
+		return image_tensor
 
-
-
-	def fingersUp(self):
-		fingers = []
-
-		if self.lmList[self.tipIds[0]][1] > self.lmList[self.tipIds[0]- 1][1]:
-			fingers.append(1)
-		else:
-			fingers.append(0)
-
-		for id in range(1, 5):
-			if self.lmList[self.tipIds[id]][2] < self.lmList[self.tipIds[id]- 2][2]:
-				fingers.append(1)
-			else:
-				fingers.append(0)
-
-		return fingers
-
-	def findDistance(self, p1, p2, img, draw=True, r=15, t=3):
-		x1, y1 = self.lmList[p1][1:]
-		x2, y2 = self.lmList[p2][1:]
-		cx, cy = (x1 + x2) //2, (y1 + y2) // 2
-
-		if draw:
-			cv2.line(img, (x1, y1),(x2,y2),(255,0,255), t)
-			cv2.circle(img, (x1, y1), r, (255,0,255), -1)
-			cv2.circle(img, (x2, y2), r, (255,0,255), -1)
-			cv2.circle(img, (cx, cy), r, (0,0,255), -1)
-		length = math.hypot(x2 - x1, y2 - y1)
-
-		return length, img, [x1,y1,x2,y2,cx,cy]
 
 	def main():
 		pTime = 0
 		cTime = 0
 		cap = cv2.VideoCapture(0)
 		detector = handDetector()
+		model = torch.load("oldmodels/savedmodel.pth")
+
+		current_pred = None
+		avg_pred_tracker = []
 		while True:
 			ret, frame = cap.read()
+
 			frame = detector.findHands(frame)
-			cv2.imshow('hands_frame', frame)
+
 			lmList, bbox, hands_only = detector.findPosition(frame)
-			hands = detector.capture_hand_img(hands_only)
+			hands_processed = detector.process_hand_img(hands_only)
+			print(hands_processed.shape)
+			model.eval()
+			with torch.no_grad():
+				max_vals, max_indices = model(hands_processed).max(1)
+				avg_pred_tracker.append(max_indices)
+				if len(avg_pred_tracker)==30:
+					prediction = stats.mode(avg_pred_tracker)[0]
+					print(type(prediction))
+					current_pred =  prediction
+					avg_pred_tracker = []
+			model.train()
+
+			cv2.putText(frame, str(current_pred), (10,70),cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
+			cv2.imshow('hands_frame', frame)
 
 
-
-			if len(lmList) != 0:
-				print(lmList[4])
 
 			cTime = time.time()
 			fps = 1 / (cTime - pTime)
@@ -123,13 +119,11 @@ class handDetector():
 
 			cv2.putText(frame, str(int(fps)), (10,70),cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
 
-			try:
+			cv2.imshow('hands_only', hands_only)
 
-				cv2.imshow('hands_only', hands)
-			except:
-				print("cant find")
 			if cv2.waitKey(1) & 0xFF == ord('q') or 0xFF == ord('Q'):
             			break
+
 
 
 if __name__ == '__main__':
