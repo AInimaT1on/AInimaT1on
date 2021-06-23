@@ -22,6 +22,7 @@ BR_x = 250
 BR_y  = 300
 cap = cv2.VideoCapture(0)
 window_name = 'sign data capture'
+example_window = "follow this sign"
 frame_counter = 0
 
 while True:
@@ -116,5 +117,6 @@ while True:
             pass
     cv2.imshow(window_name, frame)
     cv2.imshow("handsROI", ROI)
+    cv2.imshow(example_window, cv2.imread("data/data_collector/examples/A.png"))
 cap.release()
 cv2.destroyAllWindows()
