@@ -1,6 +1,9 @@
 from kivymd.app import MDApp 
 from kivy.lang import Builder
 from kivy.core.window import  Window
+from kivy.uix.image import Image
+from kivymd.uix.boxlayout import MDBoxLayout
+
 import cv2
 
 
@@ -15,12 +18,18 @@ class HangmanApp(MDApp):
 		return Builder.load_file('hangman.kv')
 
 	def load_video(self, *args):
-		ret, frame = self.capture.read()
-		#Frame initulize
-		self.image_frame = frame
-		
-		
+		while self.capture.isOpened():
+			ret, frame = self.capture.read()
+			self.image_frame = frame
+			#Frame initulize
+			cv2.imshow('Playground', frame)
+			if cv2.waitKey(30) & 0xFF == ord('q')or 0xFF == ord('Q'):
+        			break
 
+		self.capture.release()
+		cv2.destroyAllWindows()
+		
+		
 
 
 if __name__ == '__main__':
