@@ -12,6 +12,7 @@ from PIL import Image
 from scipy import stats
 import os
 from datetime import datetime as dt
+import shutil
 
 CURRENT_LETTER = 'A'
 RECORDING = 0
@@ -24,26 +25,36 @@ window_name = 'sign data capture'
 frame_counter = 0
 
 while True:
-    REC_TIME = time.time() - TIME_START
     ret, frame = cap.read()
     og = frame.copy()
     cv2.rectangle(frame, (TL_x, TL_y), (BR_x, BR_y), (0,255,0), 2)
     ROI = frame[TL_y:BR_y, TL_x:BR_x]
+
+
     if frame_counter ==1000:
         frame_counter = 0
         RECORDING = 0
         # Function for moving files from tmp to
+        shutil.move(f"data/data_collector/rcd_tmp/{CURRENT_LETTER}", f"data/data_collector/sign_letters/{CURRENT_LETTER}")
+
+
     if RECORDING:
+        frame_counter += 1
         cv2.putText(frame, f"RECORD: {CURRENT_LETTER} | FRAMES:{frame_counter}/1000", (10,70),cv2.FONT_HERSHEY_PLAIN, 2, (0,0,255), 3)
         save_sign_img(CURRENT_LETTER, ROI)
         key = cv2.waitKey(1) & 0xFF
+
+
         if key == ord(' '):
             RECORDING = 0
             frame_counter = 0
-            # Remove all files from rcd_tmp
+            dir = f"data/data_collector/rcd_tmp/{CURRENT_LETTER}"
+            for f in os.listdir(dir):
+                os.remove(os.path.join(dir, f))
+
 
     else:
-        cv2.putText(frame, f"SELECT: {CURRENT_LETTER} | FRAMES:{frame_counter}/1000", (10,70),cv2.FONT_HERSHEY_PLAIN, 2, (0,0,255), 3)
+        cv2.putText(frame, f"SELECT: {CURRENT_LETTER} | FRAMES:{frame_counter}/1000", (10,70),cv2.FONT_HERSHEY_PLAIN, 2, (0,255,0), 3)
         key = cv2.waitKey(1) & 0xFF
         if key == ord('a') or key == ord('A'):
             CURRENT_LETTER = 'A'
@@ -99,8 +110,6 @@ while True:
             CURRENT_LETTER = 'Z'
         elif key == ord(' '):
             RECORDING = np.abs(RECORDING-1)
-            TIME_START = dt.now().time()
-            print(RECORDING)
         elif key == 27:
             break
         else:
