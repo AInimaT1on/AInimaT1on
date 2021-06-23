@@ -55,12 +55,6 @@ BoxLayout:
 			icon: 'play'
 			
 			FloatLayout:
-				canvas.before:
-					Rectangle:
-						size: self.size
-						pos: self.pos
-						source: 'about.jpg'
-				size: root.width, root.height
 
 				FitImage:
 					source: 'wasted_final.jpg'
@@ -73,7 +67,6 @@ BoxLayout:
 					color:(134/255, 5/255, 209/255, 1)
 					on_press: app.load_video()
 
-				
 					
 
 
