@@ -10,6 +10,7 @@ from torchvision import datasets, transforms
 from PIL import Image
 from scipy import stats
 from helper_functions import number_to_letter
+from collections import OrderedDict
 
 cv2.__version__
 
@@ -23,11 +24,21 @@ class SignHangMan():
 		self.label_encoder = {i:l for i,l in enumerate("ABCDEFGHIJKLMNOPQRSTUVWXYZ")}
 		self.letter_bank = {l:False for l in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
 		self.phrase_bank = [
-						"Go fast alone or far together",
-						"Eat sleep rave repeat",
-						"Don't eat yellow snow",
+						"Go fast alone or far together x",
+						"Eat sleep rave repeat x",
+						"Do not eat yellow snow x",
 							]
+		self.hangman_display = [
+						("floor",),
+						("pillar",),
+						("hang_bar",),
+						("lower_strut",),
+						("upper_strut",),
+						("rope",),
+						("hangman",),
+						]
 		self.current_phrase = None
+		self.current_lives = len(self.hangman_display)
 
 
 	def get_random_from_phrase_bank(self):
@@ -35,13 +46,12 @@ class SignHangMan():
 		return self.phrase_bank[rand_idx]
 
 	def get_roi(self, frame):
-		print(f"func get_roi {type(frame)}")
+
 		roi = frame[self.TL_y:self.BR_y, self.TL_x:self.BR_x]
 		return roi
 
 	def get_hand_image(self, frame):
 		roi = self.get_roi(frame)
-		print(f"THIS ROI {type(roi)}")
 		pil_img = Image.fromarray(roi)
 		test_transforms = transforms.Compose(
 									[
@@ -66,7 +76,6 @@ class SignHangMan():
 			self.current_phrase = self.get_random_from_phrase_bank()
 
 		phrase_yloc = 80
-		phrase_xspace = 640 // len(self.current_phrase)
 
 		for i, (key, value) in enumerate(self.letter_bank.items(),1):
 			color = (0,0,0)
@@ -89,12 +98,64 @@ class SignHangMan():
 		return gui
 
 ################################################################################
+### For submitting a letter
+	def submit_letter(self, letter_code):
+		letter = self.label_encoder[letter_code]
+		print(f"current letter submitted :{letter}")
+		is_over = False
+		if self.letter_bank[letter] == False:
+			self.letter_bank[letter] = True
+			if letter in self.current_phrase:
+				print("Success you found a letter")
+			else:
+				self.current_lives -=1
+				is_over = self.game_over_check()
+				print(f" IS_OVER:::::::::: {is_over}")
+		else:
+			print("You've already selected that letter")
+
+		if is_over:
+			self.reset_game()
+
+################################################################################
+### For checking if a game is over
+	def game_over_check(self):
+		letter_checks = []
+		print(f"Current Lives: {self.current_lives}")
+		print(f"Current Lives: {self.current_phrase}")
+		if self.current_lives <= 0:
+			print("Ended because of lives ran out")
+			return True
+
+		else:
+			for l in self.current_phrase:
+				if l.isalpha():
+					if self.letter_bank[l.upper()] == True:
+						letter_checks.append(True)
+					else:
+						letter_checks.append(False)
+		print(letter_checks)
+		if False in letter_checks:
+			return False
+		else:
+			print("Victory")
+			return True
+
+################################################################################
+### For checking if a game is over
+	def reset_game(self):
+		self.letter_bank = {l:False for l in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
+		self.current_phrase = None
+		self.current_lives = len(self.hangman_display)
+
+
+################################################################################
 ### For drawing the image interface
 	def make_hangman_display_gui(self, frame):
 		gui = np.ones((600,200,3),dtype='uint8') *255
 		roi = self.get_roi(frame)
 		roi_resize = cv2.resize(roi, (200,200))
-		print(f"hangman_display_gui roi_resize {type(roi)}")
+
 		gui[0:200,0:200,:] = roi_resize
 		gui[-400:-200,-200:,:] = roi_resize
 		return gui
@@ -125,9 +186,8 @@ class SignHangMan():
 				avg_pred_tracker.append(max_indices[0].item())
 				if len(avg_pred_tracker)==30:
 					prediction = stats.mode(avg_pred_tracker)[0]
-					current_pred = prediction
+					current_pred = prediction.item()
 					avg_pred_tracker = []
-					print(current_pred)
 			model.train()
 
 ################################################################################
@@ -139,6 +199,10 @@ class SignHangMan():
 			key_input = cv2.waitKey(1) & 0xFF
 			if key_input == 27:
 				break
+			elif key_input == ord(" "):
+				self.submit_letter(current_pred)
+			else:
+				pass
 		cap.release()
 		cv2.destroyAllWindows()
 
