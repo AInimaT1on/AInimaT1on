@@ -9,6 +9,7 @@ import torch
 from torchvision import datasets, transforms
 from PIL import Image
 from scipy import stats
+from helper_functions import number_to_letter
 
 class handDetector():
 	def __init__(self, mode=False, maxHands=2, detectionCon = 0.6, trackCon = 0.6):
@@ -113,7 +114,8 @@ class handDetector():
 
 ################################################################################
 ### For outputting to the screen
-			cv2.putText(frame, str(current_pred), (10,70),cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
+			cv2.putText(frame, number_to_letter(current_pred), (10,70),cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
+			cv2.putText(frame, str(current_pred), (50,70),cv2.FONT_HERSHEY_PLAIN, 3, (255,0,255), 3)
 			cv2.imshow('hands_frame', frame)
 			cv2.imshow('hands_only', hands_only)
 			#cv2.imshow('processed_hands', hands_processed.numpy())
