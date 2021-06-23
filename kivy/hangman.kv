@@ -66,6 +66,14 @@ BoxLayout:
 					source: 'wasted_final.jpg'
 					#pos_hint: {'x':0 ,'y':-0.3}
 				
+				MDFillRoundFlatIconButton:
+					text:'Start Playing'
+					pos_hint: {'center_x':.5, "center_y": .5}
+					icon:'video'
+					color:(134/255, 5/255, 209/255, 1)
+					on_press: HangmanApp.load_video()
+					
+
 
 		
 		MDBottomNavigationItem:

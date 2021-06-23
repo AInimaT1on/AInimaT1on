@@ -18,6 +18,9 @@ class HangmanApp(MDApp):
 		ret, frame = self.capture.read()
 		#Frame initulize
 		self.image_frame = frame
+		
+		
+
 
 
 if __name__ == '__main__':
