@@ -19,7 +19,7 @@ def calc_accuracy(mdl, test_data):
     print(f"The average accuracy across all tests: {final_acc}, test_size: {len(total_acc)}")
     return final_acc
 
-<<<<<<< Updated upstream
+
 
 
 def save_sign_img(sign_label, img):
@@ -28,7 +28,7 @@ def save_sign_img(sign_label, img):
     duplicate_counter = 1
     while os.path.exists(new_file_name):
         new_file_name = sign_label + "/" + sign_code + now_code + f"_{str(duplicate_counter)}" + ".jpg"
-=======
+
 def save_sign_img(sign_label, img):
     if not os.path.exists(f'data/data_collector/rcd_tmp/{sign_label}'):
         os.makedirs(f'data/data_collector/rcd_tmp/{sign_label}')
@@ -37,6 +37,6 @@ def save_sign_img(sign_label, img):
     duplicate_counter = 1
     while os.path.exists(new_file_name):
         new_file_name = f"data/data_collector/rcd_tmp/{sign_label}/{sign_label}_{now_code}_{duplicate_counter}.jpg"
->>>>>>> Stashed changes
+
         duplicate_counter += 1
     cv2.imwrite(new_file_name, img)
