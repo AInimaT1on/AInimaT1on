@@ -117,6 +117,6 @@ while True:
             pass
     cv2.imshow(window_name, frame)
     cv2.imshow("handsROI", ROI)
-    cv2.imshow(example_window, cv2.imread("data/data_collector/examples/A.png"))
+    #cv2.imshow(example_window, cv2.imread("data/data_collector/example/A.png"))
 cap.release()
 cv2.destroyAllWindows()
