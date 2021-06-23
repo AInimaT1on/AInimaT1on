@@ -14,3 +14,14 @@ def calc_accuracy(mdl, test_data):
     final_acc = sum(total_acc) / len(total_acc)
     print(f"The average accuracy across all tests: {final_acc}, test_size: {len(total_acc)}")
     return final_acc
+
+
+
+def save_sign_img(sign_label, img):
+    now_code = dt.datetime.now().strftime("%y%m%d%H%M%S")
+    new_file_name =  sign_label + "/" + sign_code + "_" + now_code + ".jpg"
+    duplicate_counter = 1
+    while os.path.exists(new_file_name):
+        new_file_name = sign_label + "/" + sign_code + now_code + f"_{str(duplicate_counter)}" + ".jpg"
+        duplicate_counter += 1
+    cv2.imwrite(new_file_name, img)

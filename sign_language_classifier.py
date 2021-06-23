@@ -36,11 +36,11 @@ class handDetector():
 		return img
 
 	def findPosition(self, img, handNo=0, draw = False):
-		xList=[]
-		yList=[]
-		bbox=[]
+		xList =[]
+		yList =[]
+		bbox =[]
 		hands_region = img.copy()
-		self.lmList=[]
+		self.lmList = []
 		if self.results.multi_hand_landmarks:
 			myHand = self.results.multi_hand_landmarks[handNo]
 			for id, lm in enumerate(myHand.landmark):
@@ -122,6 +122,8 @@ class handDetector():
 ### For breaking out of video loop use 'q' or 'Q'
 			if cv2.waitKey(1) & 0xFF == ord('q') or 0xFF == ord('Q'):
             			break
+		cap.release()
+		cv2.destroyAllWindows()
 
 
 
