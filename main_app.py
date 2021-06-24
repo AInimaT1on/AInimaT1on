@@ -156,7 +156,10 @@ class SignHangMan():
 		roi_resize = cv2.resize(roi, (200,200))
 
 		gui[0:200,0:200,:] = roi_resize
-		gui[-400:-200,-200:,:] = roi_resize
+		gui[200:400,:200,:] = roi_resize
+		if self.current_pred != None:
+			letter = self.label_encoder[self.current_pred]
+			cv2.putText(gui, letter, (100,500),cv2.FONT_HERSHEY_PLAIN, 2, (0,255,0), 2)
 		return gui
 
 ################################################################################
