@@ -39,14 +39,13 @@ class SignHangMan():
 						]
 		self.current_phrase = None
 		self.current_lives = len(self.hangman_display)
-
+		self.current_pred = None
 
 	def get_random_from_phrase_bank(self):
 		rand_idx = np.random.randint(low=0, high=len(self.phrase_bank))
 		return self.phrase_bank[rand_idx]
 
 	def get_roi(self, frame):
-
 		roi = frame[self.TL_y:self.BR_y, self.TL_x:self.BR_x]
 		return roi
 
@@ -165,7 +164,6 @@ class SignHangMan():
 	def main_loop(self):
 		cap = cv2.VideoCapture(0)
 		model = torch.load("oldmodels/nn2_adam_lr001_ep10.pth")
-		current_pred = None
 		avg_pred_tracker = []
 		while True:
 			ret, frame = cap.read()
@@ -186,7 +184,7 @@ class SignHangMan():
 				avg_pred_tracker.append(max_indices[0].item())
 				if len(avg_pred_tracker)==30:
 					prediction = stats.mode(avg_pred_tracker)[0]
-					current_pred = prediction.item()
+					self.current_pred = prediction.item()
 					avg_pred_tracker = []
 			model.train()
 
@@ -200,7 +198,7 @@ class SignHangMan():
 			if key_input == 27:
 				break
 			elif key_input == ord(" "):
-				self.submit_letter(current_pred)
+				self.submit_letter(self.current_pred)
 			else:
 				pass
 		cap.release()

@@ -14,6 +14,7 @@ from sign_dataloaders import SignDataLoader
 from sign_model import SignNN, SignNN2
 
 def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #optimizer = optim.SGD(model.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
