@@ -13,9 +13,11 @@ from helper_functions import calc_accuracy
 from sign_dataloaders import SignDataLoader
 from sign_model import SignNN, SignNN2
 import torchvision.models as models
-from mobilenetv3 import mobilenetv3_large
+from mobilenetv3 import mobilenetv3_large, mobilenetv3_small
 
 def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
+    if torch.cuda.is_available():
+        print("Yay cuda is working")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #optimizer = optim.SGD(model.parameters(), lr=lr)
@@ -59,7 +61,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
             acc = calc_accuracy(model, x_test_loader)
             acc_test.append(acc)
             if acc > max_accuracy:
-                torch.save(model, 'densenet121.pth')
+                torch.save(model, 'mobilenetv3_large.pth')
                 max_accuracy = acc
 
         model.train()
@@ -89,8 +91,8 @@ test_transforms = transforms.Compose([
 
 #train_data = SignDataLoader("data/train data/sign_mnist_train.csv", transform=train_transforms)
 #test_data = SignDataLoader("data/test data/sign_mnist_test.csv", transform=test_transforms)
-train_data = datasets.ImageFolder("../data/signdata/Train", transform=train_transforms)
-test_data = datasets.ImageFolder("../data/signdata/Test", transform=test_transforms)
+train_data = datasets.ImageFolder("../sign_datav2/Train", transform=train_transforms)#"../data/signdata/Train"
+test_data = datasets.ImageFolder("../sign_datav2/Test", transform=test_transforms)#"../data/signdata/Test"
 train_loader = torch.utils.data.DataLoader(train_data, batch_size=32, shuffle=True)
 test_loader = torch.utils.data.DataLoader(test_data, batch_size=32, shuffle=False)
 classifier = nn.Sequential(OrderedDict([
@@ -103,17 +105,17 @@ classifier = nn.Sequential(OrderedDict([
                             ]))
 
 
-# model = mobilenetv3_large()
-# model.load_state_dict(torch.load('pretrained/mobilenetv3-large-1cd25616.pth'))
+model = mobilenetv3_large()
+model.load_state_dict(torch.load("pretrained/mobilenetv3-large-1cd25616.pth"))#'pretrained/mobilenetv3-small-55df8e1f.pth'
 
 #model = torch.hub.load('pytorch/vision:v0.9.0', 'mobilenet_v2', pretrained=True
 #model = torch.hub.load('pytorch/vision:v0.9.0', 'mobilenet_v2', pretrained=True)
 #model = SignNN(784, 64, 32, 16)
 #model = SignNN2()
-model = models.densenet121(pretrained=True)
-#model = models.resnet18(pretrained=True)
+#model = models.densenet121(pretrained=True)
+model = models.resnet18(pretrained=True)
 #model = models.resnet34(pretrained=True)
 #model = models.mobilenet_v3_small(pretrained=True)
 
 model.classifier = classifier
-trained_model = train_MyNN(train_loader, test_loader, model , 0.001, 10)
+trained_model = train_MyNN(train_loader, test_loader, model , 0.01, 10)
