@@ -20,7 +20,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
         print("Yay cuda is working")
     else:
         print("cuda was not available")
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #optimizer = optim.SGD(model.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
@@ -49,8 +49,8 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
             optimizer.step()
             running_loss += loss.item()
 
-            if i%100 ==0:
-                print(f"On Iteration: {i}, loss was: {round(running_loss/100, 4)}")
+            if i%32 ==0:
+                print(f"On Iteration: {i}, loss was: {round(running_loss/32, 4)}")
                 running_losses.append(running_loss)
                 running_loss = 0
         epoch_losses.append(loss)
@@ -64,7 +64,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
             acc = calc_accuracy(model, x_test_loader)
             acc_test.append(acc)
             if acc > max_accuracy:
-                torch.save(model, 'mobilenetv3_large.pth')
+                torch.save(model, 'mobilenetv3_large100_img.pth')
                 max_accuracy = acc
 
         model.train()
@@ -94,8 +94,8 @@ test_transforms = transforms.Compose([
 
 #train_data = SignDataLoader("data/train data/sign_mnist_train.csv", transform=train_transforms)
 #test_data = SignDataLoader("data/test data/sign_mnist_test.csv", transform=test_transforms)
-train_data = datasets.ImageFolder("../data/signdata/Train", transform=train_transforms)#"../data/signdata/Train" "../sign_datav2/Train"
-test_data = datasets.ImageFolder("../data/signdata/Test" , transform=test_transforms)#"../sign_datav2/Test"
+train_data = datasets.ImageFolder("../data/signdata/Train", transform=train_transforms)# "../sign_datav2/Train" "../data/signdata/Train" "../sign_datav2/random_train_100"
+test_data = datasets.ImageFolder("../data/signdata/Test", transform=test_transforms)#"../sign_datav2/Test" #"../data/signdata/Test" "../sign_datav2/random_test_100"
 train_loader = torch.utils.data.DataLoader(train_data, batch_size=32, shuffle=True)
 test_loader = torch.utils.data.DataLoader(test_data, batch_size=32, shuffle=False)
 classifier = nn.Sequential(OrderedDict([
@@ -122,4 +122,4 @@ for param in model.parameters():
 #model = models.mobilenet_v3_small(pretrained=True)
 #print(model)
 model.classifier = classifier
-trained_model = train_MyNN(train_loader, test_loader, model , 0.01, 10)
+trained_model = train_MyNN(train_loader, test_loader, model , 0.001, 10)
