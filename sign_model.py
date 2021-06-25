@@ -16,7 +16,7 @@ class SignNN(nn.Module):
         self.l1 = nn.Linear(input_dimensions, neurons_l1)
         self.l2 = nn.Linear(neurons_l1, neurons_l2)
         self.l3 = nn.Linear(neurons_l2, neurons_l3)
-        self.final = nn.Linear(neurons_l3, 26)
+        self.final = nn.Linear(neurons_l3, 24)
 
     def forward(self, x):
         x = self.l1(x)
@@ -50,7 +50,7 @@ class SignNN2(nn.Module):
         self.fc1 = nn.Linear(in_features=64*6*6, out_features=600)
         self.drop = nn.Dropout2d(0.25)
         self.fc2 = nn.Linear(in_features=600, out_features=120)
-        self.fc3 = nn.Linear(in_features=120, out_features=26)
+        self.fc3 = nn.Linear(in_features=120, out_features=24)
 
 
     def forward(self, x):

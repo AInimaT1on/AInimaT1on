@@ -21,8 +21,8 @@ class SignHangMan():
 		self.TL_y = tly
 		self.BR_x = brx
 		self.BR_y = bry
-		self.label_encoder = {i:l for i,l in enumerate("ABCDEFGHIJKLMNOPQRSTUVWXYZ")}
-		self.letter_bank = {l:False for l in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
+		self.label_encoder = {i:l for i,l in enumerate("ABCDEFGHIKLMNOPQRSTUVWXY")}
+		self.letter_bank = {l:False for l in "ABCDEFGHIKLMNOPQRSTUVWXY"}
 		self.phrase_bank = [
 						"Go fast alone or far together x",
 						"Eat sleep rave repeat x",
@@ -40,6 +40,21 @@ class SignHangMan():
 		self.current_phrase = None
 		self.current_lives = len(self.hangman_display)
 		self.current_pred = None
+		self.current_example = "A"
+		self.current_thr1 = 100
+		self.current_thr2 = 200
+		self.current_cntQnt = 1
+		self.wt1 = "wt1"
+		self.wt2 = "wt2"
+		self.wt3 = "wt3"
+		self.wt4 = "wt4"
+
+		cv2.namedWindow(self.wt1, cv2.WINDOW_AUTOSIZE)
+		cv2.namedWindow(self.wt2, cv2.WINDOW_AUTOSIZE)
+		cv2.namedWindow(self.wt3, cv2.WINDOW_AUTOSIZE)
+		cv2.namedWindow(self.wt4, cv2.WINDOW_AUTOSIZE)
+
+
 
 	def get_random_from_phrase_bank(self):
 		rand_idx = np.random.randint(low=0, high=len(self.phrase_bank))
@@ -49,9 +64,44 @@ class SignHangMan():
 		roi = frame[self.TL_y:self.BR_y, self.TL_x:self.BR_x]
 		return roi
 
+	def get_contour_areas(contours):
+	    all_areas = []
+	    for contour in contours:
+	        contour_area = cv2.contourArea(contour)
+	        all_areas.append(contour_area)
+	    return all_areas
+
 	def get_hand_image(self, frame):
+		test_img_list = []
 		roi = self.get_roi(frame)
 		pil_img = Image.fromarray(roi)
+
+		img_gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+		img_gray_sub = cv2.subtract(255,img_gray)
+		blur = cv2.GaussianBlur(img_gray,(5,5),1)
+		cnv = np.zeros(img_gray.shape, dtype='uint8')
+		canny_img = cv2.Canny(blur, self.current_thr1,self.current_thr2)
+		contours, h = cv2.findContours(canny_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+		contours_by_size = sorted(contours, key=cv2.contourArea, reverse=True)
+		contour_img = cv2.drawContours(cnv, contours_by_size[0:5], -1, (255,255,255),thickness=3)
+		kernel1 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
+		kernel2 = np.ones((3,3),np.uint8)
+		erosion = cv2.erode(contour_img,kernel2,iterations = 1)
+		dilation = cv2.dilate(contour_img,kernel1,iterations = 7)
+
+
+
+		test_img_list.append(canny_img)
+		test_img_list.append(contour_img)
+		test_img_list.append(erosion)
+		test_img_list.append(dilation)
+		for img in test_img_list:
+			print(img.shape)
+
+		#test_img_list.append(approx)
+
+		# ret, thresh = cv2.threshold(img_gray,self.current_thr1,255,cv2.THRESH_TOZERO)
+
 		test_transforms = transforms.Compose(
 									[
 									transforms.Grayscale(),
@@ -61,7 +111,8 @@ class SignHangMan():
 									])
 		image_tensor = test_transforms(pil_img).float()
 		image_tensor = torch.flatten(image_tensor).reshape((1,1,28,28))
-		return image_tensor
+
+		return image_tensor,canny_img, test_img_list#, dilation
 
 
 ################################################################################
@@ -120,6 +171,7 @@ class SignHangMan():
 ### For checking if a game is over
 	def game_over_check(self):
 		letter_checks = []
+
 		print(f"Current Lives: {self.current_lives}")
 		print(f"Current Lives: {self.current_phrase}")
 		if self.current_lives <= 0:
@@ -143,7 +195,7 @@ class SignHangMan():
 ################################################################################
 ### For checking if a game is over
 	def reset_game(self):
-		self.letter_bank = {l:False for l in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"}
+		self.letter_bank = {l:False for l in "ABCDEFGHIKLMNOPQRSTUVWXY"}
 		self.current_phrase = None
 		self.current_lives = len(self.hangman_display)
 
@@ -154,26 +206,41 @@ class SignHangMan():
 		gui = np.ones((600,200,3),dtype='uint8') *255
 		roi = self.get_roi(frame)
 		roi_resize = cv2.resize(roi, (200,200))
-
+		example = cv2.imread(f"data/data_collector/examples/{self.current_example}.jpg")
 		gui[0:200,0:200,:] = roi_resize
-		gui[200:400,:200,:] = roi_resize
+		gui[200:400,:200,:] = example
 		if self.current_pred != None:
 			letter = self.label_encoder[self.current_pred]
 			cv2.putText(gui, letter, (100,500),cv2.FONT_HERSHEY_PLAIN, 2, (0,255,0), 2)
 		return gui
 
+	def change_threshold1_value(self, value):
+		self.current_thr1 = value
+
+	def change_threshold2_value(self, value):
+		self.current_thr2 = value
+
+	def change_conotour_qnt_value(self, value):
+		self.current_cntQnt = value
 ################################################################################
 ### Main loop for capturing video
 	def main_loop(self):
+		cv2.createTrackbar("Change threshold 1 value", self.wt1, self.current_thr1, 255, self.change_threshold1_value)
+		cv2.createTrackbar("Change threshold2 value", self.wt1, self.current_thr2, 255, self.change_threshold2_value)
+		cv2.createTrackbar("Change contour quantity", self.wt1, self.current_cntQnt , 20, self.change_conotour_qnt_value)
+		cv2.createTrackbar("Change contour quantity", self.wt1, self.current_cntQnt , 20, self.change_conotour_qnt_value)
+		cv2.createTrackbar("Change contour quantity", self.wt1, self.current_cntQnt , 20, self.change_conotour_qnt_value)
+		cv2.createTrackbar("Change contour quantity", self.wt1, self.current_cntQnt , 20, self.change_conotour_qnt_value)
 		cap = cv2.VideoCapture(0)
-		model = torch.load("oldmodels/nn2_adam_lr001_ep10.pth")
+		model = torch.load("double_train.pth")
 		avg_pred_tracker = []
 		while True:
+			print(self.current_pred)
 			ret, frame = cap.read()
 			og_frame = frame.copy()
 ################################################################################
 ### For finding hand and concatenating the interface
-			hands_processed = self.get_hand_image(frame)
+			hands_processed, canny_img, test_img_list = self.get_hand_image(frame)
 			gui_letters = self.make_hangman_letter_gui()
 			gui_image = self.make_hangman_display_gui(frame)
 			og_plus = cv2.vconcat((frame, gui_letters))
@@ -188,11 +255,15 @@ class SignHangMan():
 				if len(avg_pred_tracker)==30:
 					prediction = stats.mode(avg_pred_tracker)[0]
 					self.current_pred = prediction.item()
+					print(prediction.item())
 					avg_pred_tracker = []
 			model.train()
 
 ################################################################################
 ### For outputting to the screen
+			test_vconcat = cv2.vconcat(test_img_list)
+			#cv2.imshow(self.wt2, test_img_list[0])
+			cv2.imshow(self.wt1, test_vconcat)
 			cv2.imshow('concat', og_plus_plus)
 
 ################################################################################
@@ -202,6 +273,8 @@ class SignHangMan():
 				break
 			elif key_input == ord(" "):
 				self.submit_letter(self.current_pred)
+			elif chr(key_input) in "ABCDEFGHIKLMNOPQRSTUVWXYabcdefghiklmnopqrstuvwxy":
+				self.current_example = chr(key_input).upper()
 			else:
 				pass
 		cap.release()
