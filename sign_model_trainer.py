@@ -30,6 +30,8 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
     running_loss = 0
     max_accuracy = 0
     model.train()
+    model.to(device)
+
     for epoch in range(epochs):
         running_losses = []
         print(f"EPOCH: {epoch+1}/{epochs}")
