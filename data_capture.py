@@ -18,8 +18,8 @@ CURRENT_LETTER = 'A'
 RECORDING = 0
 TL_x = 50
 TL_y = 100
-BR_x = 250
-BR_y  = 300
+BR_x = 274
+BR_y  = 324
 cap = cv2.VideoCapture(0)
 window_name = 'sign data capture'
 example_window = "follow this sign"
@@ -36,7 +36,7 @@ while True:
         frame_counter = 0
         RECORDING = 0
         # Function for moving files from tmp to
-        shutil.move(f"data/data_collector/rcd_tmp/{CURRENT_LETTER}", f"data/data_collector/sign_letters/{CURRENT_LETTER}")
+        shutil.move(f"data/data_collector/rcd_tmp/{CURRENT_LETTER}{CURRENT_LETTER}", f"data/data_collector/sign_letters/{CURRENT_LETTER}{CURRENT_LETTER}")
 
 
     if RECORDING:
@@ -49,7 +49,7 @@ while True:
         if key == ord(' '):
             RECORDING = 0
             frame_counter = 0
-            dir = f"data/data_collector/rcd_tmp/{CURRENT_LETTER}"
+            dir = f"data/data_collector/rcd_tmp/{CURRENT_LETTER}{CURRENT_LETTER}"
             for f in os.listdir(dir):
                 os.remove(os.path.join(dir, f))
 
@@ -115,8 +115,10 @@ while True:
             break
         else:
             pass
+    x = cv2.imread("data/data_collector/examples/A.png")
+    #cv2.imshow("Examples", x)
     cv2.imshow(window_name, frame)
-    cv2.imshow("handsROI", ROI)
-    #cv2.imshow(example_window, cv2.imread("data/data_collector/example/A.png"))
+    #cv2.imshow("handsROI", ROI)
+
 cap.release()
 cv2.destroyAllWindows()
