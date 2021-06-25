@@ -64,7 +64,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
         model.eval()
         with torch.no_grad():
             total_acc = []
-            for images, labels in iter(test_data):
+            for images, labels in iter(x_test_loader):
                 #images.resize_(images.size()[0],784)
                 images, labels = images.to(device), labels.to(device)
                 max_vals, max_indices = mdl(images).max(1)
