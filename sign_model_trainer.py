@@ -94,8 +94,8 @@ test_transforms = transforms.Compose([
 
 #train_data = SignDataLoader("data/train data/sign_mnist_train.csv", transform=train_transforms)
 #test_data = SignDataLoader("data/test data/sign_mnist_test.csv", transform=test_transforms)
-train_data = datasets.ImageFolder("../sign_datav2/random_train_100", transform=train_transforms)#"../data/signdata/Train" "../sign_datav2/Train"
-test_data = datasets.ImageFolder("../sign_datav2/random_test_100", transform=test_transforms)#"../sign_datav2/Test" #"../data/signdata/Test"
+train_data = datasets.ImageFolder("../data/signdata/Train", transform=train_transforms)# "../sign_datav2/Train" "../data/signdata/Train" "../sign_datav2/random_train_100"
+test_data = datasets.ImageFolder("../data/signdata/Test", transform=test_transforms)#"../sign_datav2/Test" #"../data/signdata/Test" "../sign_datav2/random_test_100"
 train_loader = torch.utils.data.DataLoader(train_data, batch_size=32, shuffle=True)
 test_loader = torch.utils.data.DataLoader(test_data, batch_size=32, shuffle=False)
 classifier = nn.Sequential(OrderedDict([
