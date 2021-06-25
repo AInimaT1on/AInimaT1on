@@ -63,11 +63,23 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
         #### Validate
         model.eval()
         with torch.no_grad():
-            acc = calc_accuracy(model, x_test_loader)
-            acc_test.append(acc)
-            if acc > max_accuracy:
+            total_acc = []
+            for images, labels in iter(test_data):
+                #images.resize_(images.size()[0],784)
+                images, labels = images.to(device), labels.to(device)
+                max_vals, max_indices = mdl(images).max(1)
+                # assumes the first dimension is batch size
+                n = max_indices.size(0)  # index 0 for extracting the # of elements
+                # calulate acc (note .item() to do float division)
+                acc = (max_indices == labels).sum().item() / n
+                total_acc.append(acc)
+
+            final_acc = sum(total_acc) / len(total_acc)
+            print(f"The average accuracy across all tests: {final_acc}, test_size: {len(total_acc)}")
+            acc_test.append(finl_acc)
+            if final_acc > max_accuracy:
                 torch.save(model, 'mobilenetv3_large100_img.pth')
-                max_accuracy = acc
+                max_accuracy = final_acc
 
         model.train()
 
