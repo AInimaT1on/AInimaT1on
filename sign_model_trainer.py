@@ -76,7 +76,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
 
             final_acc = sum(total_acc) / len(total_acc)
             print(f"The average accuracy across all tests: {final_acc}, test_size: {len(total_acc)}")
-            acc_test.append(finl_acc)
+            acc_test.append(final_acc)
             if final_acc > max_accuracy:
                 torch.save(model, 'mobilenetv3_large100_img.pth')
                 max_accuracy = final_acc
