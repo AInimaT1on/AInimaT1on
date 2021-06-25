@@ -33,7 +33,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
         print(f"EPOCH: {epoch+1}/{epochs}")
 
         for i, (images, labels) in enumerate(iter(x_train_loader)):
-            print(images.shape)
+            
             images, labels = images.to(device), labels.to(device)
             #images.resize_(images.size()[0],784)
             #print(images.shape)
