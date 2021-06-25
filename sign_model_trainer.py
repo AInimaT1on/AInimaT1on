@@ -51,8 +51,8 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
             optimizer.step()
             running_loss += loss.item()
 
-            if i%32 ==0:
-                print(f"On Iteration: {i}, loss was: {round(running_loss/32, 4)}")
+            if i%100 ==0:
+                print(f"On Iteration: {i}, loss was: {round(running_loss/100, 4)}")
                 running_losses.append(running_loss)
                 running_loss = 0
         epoch_losses.append(loss)
