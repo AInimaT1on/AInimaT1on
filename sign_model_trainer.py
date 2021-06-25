@@ -33,6 +33,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
         print(f"EPOCH: {epoch+1}/{epochs}")
 
         for i, (images, labels) in enumerate(iter(x_train_loader)):
+            print(images.shape)
             images, labels = images.to(device), labels.to(device)
             #images.resize_(images.size()[0],784)
             #print(images.shape)
@@ -46,8 +47,8 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
             optimizer.step()
             running_loss += loss.item()
 
-            if i%100 ==0:
-                print(f"On Iteration: {i}, loss was: {round(running_loss/100, 4)}")
+            if i%50 ==0:
+                print(f"On Iteration: {i}, loss was: {round(running_loss/50, 4)}")
                 running_losses.append(running_loss)
                 running_loss = 0
         epoch_losses.append(loss)
@@ -96,9 +97,9 @@ test_data = datasets.ImageFolder("../sign_datav2/Test", transform=test_transform
 train_loader = torch.utils.data.DataLoader(train_data, batch_size=32, shuffle=True)
 test_loader = torch.utils.data.DataLoader(test_data, batch_size=32, shuffle=False)
 classifier = nn.Sequential(OrderedDict([
-                            ("fc1", nn.Linear(in_features = 1024, out_features=1000, bias=True)),
+                            ("fc1", nn.Linear(in_features = 960, out_features=1280, bias=True)),
                             ("ReLU1", nn.ReLU()),
-                            ("fc2", nn.Linear(in_features=1000, out_features=500, bias=True)),
+                            ("fc2", nn.Linear(in_features=1280, out_features=500, bias=True)),
                             ("ReLU2", nn.ReLU()),
                             ("fc3", nn.Linear(in_features=500, out_features=5, bias=True)),
                             #("OUT", nn.LogSoftmax(dim=1)),
@@ -107,15 +108,16 @@ classifier = nn.Sequential(OrderedDict([
 
 model = mobilenetv3_large()
 model.load_state_dict(torch.load("pretrained/mobilenetv3-large-1cd25616.pth"))#'pretrained/mobilenetv3-small-55df8e1f.pth'
-
+for param in model.parameters():
+    param.requires_grad = False
 #model = torch.hub.load('pytorch/vision:v0.9.0', 'mobilenet_v2', pretrained=True
 #model = torch.hub.load('pytorch/vision:v0.9.0', 'mobilenet_v2', pretrained=True)
 #model = SignNN(784, 64, 32, 16)
 #model = SignNN2()
 #model = models.densenet121(pretrained=True)
-model = models.resnet18(pretrained=True)
+#model = models.resnet18(pretrained=True)
 #model = models.resnet34(pretrained=True)
 #model = models.mobilenet_v3_small(pretrained=True)
-
+#print(model)
 model.classifier = classifier
 trained_model = train_MyNN(train_loader, test_loader, model , 0.01, 10)
