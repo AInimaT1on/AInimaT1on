@@ -78,7 +78,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
             print(f"The average accuracy across all tests: {final_acc}, test_size: {len(total_acc)}")
             acc_test.append(final_acc)
             if final_acc > max_accuracy:
-                torch.save(model, 'mobilenetv3_large0001_100.pth')
+                torch.save(model, 'mobilenetv3_large1_100.pth')
                 max_accuracy = final_acc
 
         model.train()
@@ -136,4 +136,4 @@ for param in model.parameters():
 #model = models.mobilenet_v3_small(pretrained=True)
 #print(model)
 model.classifier = classifier
-trained_model = train_MyNN(train_loader, test_loader, model , 0.0001, 100)
+trained_model = train_MyNN(train_loader, test_loader, model , 0.1, 100)
