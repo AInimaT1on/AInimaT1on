@@ -33,7 +33,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
         print(f"EPOCH: {epoch+1}/{epochs}")
 
         for i, (images, labels) in enumerate(iter(x_train_loader)):
-            
+
             images, labels = images.to(device), labels.to(device)
             #images.resize_(images.size()[0],784)
             #print(images.shape)
@@ -47,8 +47,8 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
             optimizer.step()
             running_loss += loss.item()
 
-            if i%50 ==0:
-                print(f"On Iteration: {i}, loss was: {round(running_loss/50, 4)}")
+            if i%100 ==0:
+                print(f"On Iteration: {i}, loss was: {round(running_loss/100, 4)}")
                 running_losses.append(running_loss)
                 running_loss = 0
         epoch_losses.append(loss)
