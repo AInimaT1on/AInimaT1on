@@ -67,7 +67,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
             for images, labels in iter(x_test_loader):
                 #images.resize_(images.size()[0],784)
                 images, labels = images.to(device), labels.to(device)
-                max_vals, max_indices = mdl(images).max(1)
+                max_vals, max_indices = model(images).max(1)
                 # assumes the first dimension is batch size
                 n = max_indices.size(0)  # index 0 for extracting the # of elements
                 # calulate acc (note .item() to do float division)
