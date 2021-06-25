@@ -20,7 +20,7 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
         print("Yay cuda is working")
     else:
         print("cuda was not available")
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #optimizer = optim.SGD(model.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
