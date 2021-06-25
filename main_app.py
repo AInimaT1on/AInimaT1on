@@ -21,12 +21,14 @@ class SignHangMan():
 		self.TL_y = tly
 		self.BR_x = brx
 		self.BR_y = bry
-		self.label_encoder = {i:l for i,l in enumerate("ABCDEFGHIKLMNOPQRSTUVWXY")}
-		self.letter_bank = {l:False for l in "ABCDEFGHIKLMNOPQRSTUVWXY"}
+		self.label_encoder = {i:l for i,l in enumerate("HLOWY")}
+		self.letter_bank = {l:False for l in "HLOWY"}
 		self.phrase_bank = [
-						"Go fast alone or far together x",
-						"Eat sleep rave repeat x",
-						"Do not eat yellow snow x",
+							"why yolo",
+							"lol why",
+							"ooo lol",
+							"hoy hoy",
+							"woo woo",
 							]
 		self.hangman_display = [
 						("floor",),
@@ -195,7 +197,7 @@ class SignHangMan():
 ################################################################################
 ### For checking if a game is over
 	def reset_game(self):
-		self.letter_bank = {l:False for l in "ABCDEFGHIKLMNOPQRSTUVWXY"}
+		self.letter_bank = {l:False for l in "HLOWY"}
 		self.current_phrase = None
 		self.current_lives = len(self.hangman_display)
 
