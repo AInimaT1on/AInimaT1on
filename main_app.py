@@ -209,9 +209,9 @@ class SignHangMan():
 		gui = np.ones((600,200,3),dtype='uint8') *255
 		roi = self.get_roi(frame)
 		roi_resize = cv2.resize(roi, (200,200))
-		example = cv2.imread(f"data/data_collector/examples/{self.current_example}.jpg")
+		#example = cv2.imread(f"data/data_collector/examples/{self.current_example}.jpg")
 		gui[0:200,0:200,:] = roi_resize
-		gui[200:400,:200,:] = example
+		#gui[200:400,:200,:] = example
 		if self.current_pred != None:
 			letter = self.label_encoder[self.current_pred]
 			cv2.putText(gui, letter, (100,500),cv2.FONT_HERSHEY_PLAIN, 2, (0,255,0), 2)
