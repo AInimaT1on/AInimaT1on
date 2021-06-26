@@ -30,6 +30,8 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
     running_loss = 0
     max_accuracy = 0
     model.train()
+    model.to(device)
+
     for epoch in range(epochs):
         running_losses = []
         print(f"EPOCH: {epoch+1}/{epochs}")
@@ -49,8 +51,8 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
             optimizer.step()
             running_loss += loss.item()
 
-            if i%32 ==0:
-                print(f"On Iteration: {i}, loss was: {round(running_loss/32, 4)}")
+            if i%100 ==0:
+                print(f"On Iteration: {i}, loss was: {round(running_loss/100, 4)}")
                 running_losses.append(running_loss)
                 running_loss = 0
         epoch_losses.append(loss)
@@ -61,11 +63,23 @@ def train_MyNN(x_train_loader,x_test_loader, model, lr, epochs):
         #### Validate
         model.eval()
         with torch.no_grad():
-            acc = calc_accuracy(model, x_test_loader)
-            acc_test.append(acc)
-            if acc > max_accuracy:
-                torch.save(model, 'mobilenetv3_large100_img.pth')
-                max_accuracy = acc
+            total_acc = []
+            for images, labels in iter(x_test_loader):
+                #images.resize_(images.size()[0],784)
+                images, labels = images.to(device), labels.to(device)
+                max_vals, max_indices = model(images).max(1)
+                # assumes the first dimension is batch size
+                n = max_indices.size(0)  # index 0 for extracting the # of elements
+                # calulate acc (note .item() to do float division)
+                acc = (max_indices == labels).sum().item() / n
+                total_acc.append(acc)
+
+            final_acc = sum(total_acc) / len(total_acc)
+            print(f"The average accuracy across all tests: {final_acc}, test_size: {len(total_acc)}")
+            acc_test.append(final_acc)
+            if final_acc > max_accuracy:
+                torch.save(model, 'mobilenetv3_large1_100.pth')
+                max_accuracy = final_acc
 
         model.train()
 
@@ -122,4 +136,4 @@ for param in model.parameters():
 #model = models.mobilenet_v3_small(pretrained=True)
 #print(model)
 model.classifier = classifier
-trained_model = train_MyNN(train_loader, test_loader, model , 0.001, 10)
+trained_model = train_MyNN(train_loader, test_loader, model , 0.1, 100)
