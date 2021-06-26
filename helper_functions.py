@@ -8,6 +8,7 @@ def calc_accuracy(mdl, test_data):
     total_acc = []
     for images, labels in iter(test_data):
         #images.resize_(images.size()[0],784)
+        images, labels = images.to(device), labels.to(device)
         max_vals, max_indices = mdl(images).max(1)
         # assumes the first dimension is batch size
         n = max_indices.size(0)  # index 0 for extracting the # of elements
