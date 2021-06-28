@@ -3,8 +3,8 @@ from kivy.lang import Builder
 from kivy.core.window import  Window
 from kivy.uix.image import Image
 from kivymd.uix.boxlayout import MDBoxLayout
-import cv2
 import os
+import cv2
 
 
 
